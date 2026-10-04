@@ -1,41 +1,87 @@
--- ══════════════════════════════════════════
--- BodegaTech — Script de Inventario
--- Autor: [Matias Gimenez]
--- Fecha: [02/10/2026]
--- ══════════════════════════════════════════
-USE RetailPro;
+-- CREACIÓN DE LA BASE DE DATOS --
+CREATE DATABASE ventas_tech_db;
 
--- ── SECCIÓN DDL ──────────────────────────
-DROP TABLE IF EXISTS inventario;
+USE ventas_tech_db;
 
-CREATE TABLE inventario(
-	id_producto	INT PRIMARY KEY,
-	nombre_producto	VARCHAR(100),
-	categoria VARCHAR(50),
-	precio_unitario	DECIMAL(10,2),
-	stock_actual INT,
-	stock_minimo INT,
-	fecha_ingreso DATE,
-	activo BIT DEFAULT 1
-	); 
--- ── SECCIÓN DML ──────────────────────────
-INSERT INTO inventario(id_producto,nombre_producto,categoria,precio_unitario,stock_actual,stock_minimo,fecha_ingreso,activo)
-VALUES
-(1,'Laptop Pro 15','Computación',1200.00,15,3,'2024-01-10',1),
-(2,'Mouse Inalámbrico','Accesorios',28.00,80,10,'2024-01-10',1),
-(3,'Monitor 4K 27"','Computación',450.00,12,2,'2024-01-15',	1),
-(4,'Teclado Mecánico','Accesorios',95.00,40,5,'2024-01-15',1),
-(5,'Laptop Basic 14','Computación',650.00,	20,	3,'2024-02-01',1),
-(6,	'Auriculares BT Pro','Audio','120.00',35,5,'2024-02-01',1),
-(7,'Hub USB-C 7 puertos','Accesorios',45.00,60,10,'2024-02-10',1),
-(8,'Webcam HD 1080p','Accesorios',85.00,25,5,'2024-02-10',1),
-(9,'SSD Externo 1TB','Almacenamiento',130.00,18,3,'2024-03-01',1),
-(10,'Parlante Bluetooth','Audio',60.00,45,8,'2024-03-01',1)
--- UPDATE ventas del día
-UPDATE inventario SET stock_actual = 12 WHERE id_producto = 1;
-UPDATE inventario SET stock_actual = 68 WHERE id_producto = 2;
-UPDATE inventario SET stock_actual = 30 WHERE id_producto = 6;
--- UPDATE producto descontinuado
-UPDATE inventario SET activo = 0 WHERE id_producto = 8;
--- SELECT validaciones
-SELECT * FROM inventario;
+-- Sección 1: DROP TABLES --
+
+DROP TABLE IF EXISTS ventas;
+DROP TABLE IF EXISTS productos;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS categorias;
+
+-- Sección 2: CREATE TABLES --
+
+CREATE TABLE categorias(
+	id_categoria INT PRIMARY KEY,
+	nombre_categoria VARCHAR(50),
+	descripcion varchar(200)
+);
+
+CREATE TABLE clientes(
+	id_cliente	INT	PRIMARY KEY,
+	nombre	VARCHAR(100) NOT NULL,
+	email	VARCHAR(100) UNIQUE,
+	ciudad	VARCHAR(50),
+	fecha_registro	DATE NOT NULL
+);
+
+CREATE TABLE productos (
+    id_producto INT PRIMARY KEY,
+    nombre_producto VARCHAR(100) NOT NULL,
+    id_categoria INT REFERENCES categorias(id_categoria), 
+    precio DECIMAL(10,2) NOT NULL,
+    stock INT DEFAULT 0,
+    activo BIT DEFAULT 1
+);
+
+CREATE TABLE ventas (
+    id_venta INT PRIMARY KEY,
+    id_cliente INT REFERENCES clientes(id_cliente),   
+    id_producto INT REFERENCES productos(id_producto), 
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL,
+    fecha_venta DATE NOT NULL
+);
+
+-- Sección 3: INSERT DATA --
+
+INSERT INTO categorias (id_categoria, nombre_categoria, descripcion) VALUES
+  (1, 'Computación',    'Laptops, PCs y monitores'),
+  (2, 'Accesorios',     'Periféricos y complementos'),
+  (3, 'Audio',          'Auriculares y parlantes'),
+  (4, 'Almacenamiento', 'Discos y memorias');
+
+INSERT INTO clientes (id_cliente, nombre, email, ciudad, fecha_registro) VALUES
+  (1, 'María López',  'maria@mail.com',  'Buenos Aires', '2024-01-05'),
+  (2, 'Carlos Ruiz',  'carlos@mail.com', 'Córdoba',      '2024-01-10'),
+  (3, 'Ana Gómez',    'ana@mail.com',    'Rosario',      '2024-02-01'),
+  (4, 'Pedro Sanz',   'pedro@mail.com',  'Mendoza',      '2024-02-15'),
+  (5, 'Laura Torres', 'laura@mail.com',  'Tucumán',      '2024-03-01');
+
+INSERT INTO productos (id_producto, nombre_producto, id_categoria, precio, stock, activo) VALUES
+  (1, 'Laptop Pro 15',      1, 1200.00, 15, 1),
+  (2, 'Mouse Inalámbrico',  2,   28.00, 80, 1),
+  (3, 'Monitor 4K 27',      1,  450.00, 12, 1),
+  (4, 'Auriculares BT Pro', 3,  120.00, 35, 1),
+  (5, 'SSD Externo 1TB',    4,  130.00, 18, 1),
+  (6, 'Teclado Mecánico',   2,   95.00, 40, 1);
+
+INSERT INTO ventas (id_venta, id_cliente, id_producto, cantidad, precio_unitario, fecha_venta) VALUES
+  ( 1, 1, 1, 2, 1200.00, '2024-03-05'),
+  ( 2, 2, 2, 5,   28.00, '2024-03-06'),
+  ( 3, 3, 3, 1,  450.00, '2024-03-07'),
+  ( 4, 1, 4, 2,  120.00, '2024-03-08'),
+  ( 5, 4, 5, 3,  130.00, '2024-03-10'),
+  ( 6, 2, 6, 4,   95.00, '2024-03-11'),
+  ( 7, 5, 1, 1, 1200.00, '2024-03-12'),
+  ( 8, 3, 2, 8,   28.00, '2024-03-13'),
+  ( 9, 4, 4, 1,  120.00, '2024-03-14'),
+  (10, 5, 3, 2,  450.00, '2024-03-15');
+
+-- Sección 4: Validación --
+
+SELECT * FROM categorias;   
+SELECT * FROM clientes;     
+SELECT * FROM productos;    
+SELECT * FROM ventas;       
